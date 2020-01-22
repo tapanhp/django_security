@@ -65,3 +65,61 @@
   - It is also important to be particularly careful when using `is_safe` with custom template tags, the [`safe`](https://docs.djangoproject.com/en/3.0/ref/templates/builtins/#std:templatefilter-safe) template tag, [`mark_safe`](https://docs.djangoproject.com/en/3.0/ref/utils/#module-django.utils.safestring), and when autoescape is turned off.
 
   - Most of the time the protection towards this kind of attacks is escaping the dangerous characters or syntax when anything in web-page is dynamic.
+
+
+
+
+
+# CSRF Attack
+
+- __How does it work?__
+
+  - The attacker causes the victim user to carry out an action unintentionally.
+
+  - For example, suppose an application contains a function that lets the user change the email address on their account. When a user performs this action, they make an HTTP request like the following:
+
+    ```http
+    POST /email/change HTTP/1.1
+    Host: vulnerable-website.com
+    Content-Type: application/x-www-form-urlencoded
+    Content-Length: 30
+    Cookie: session=yvthwsztyeQkAPzeQ5gHgTvlyxHfsAfE
+    
+    email=wiener@normal-user.com
+    ```
+
+  - Now attacker will create an HTML page somewhat like this:
+
+    ```html
+    <html>
+      <body>
+        <form action="https://vulnerable-website.com/email/change" method="POST">
+          <input type="hidden" name="email" value="pwned@evil-user.net" />
+        </form>
+        <script>
+          document.forms[0].submit();
+        </script>
+      </body>
+    </html>
+    ```
+
+  - The attacker's page will trigger an HTTP request to the vulnerable web site.
+
+  - If the user is logged in to the vulnerable web site, their browser will automatically include their session cookie in the request (assuming [SameSite cookies](https://portswigger.net/web-security/csrf/samesite-cookies) are not being used).
+
+  - The vulnerable web site will process the request in the normal way, treat it as having been made by the victim user, and change their email address.
+
+- __What can attacker do?__
+
+  - In a successful CSRF attack, the attacker causes the victim user to carry out an action unintentionally. For example, this might be to change the email address on their account, to change their password, or to make a funds transfer. Depending on the nature of the action, the attacker might be able to gain full control over the user's account. If the compromised user has a privileged role within the application, then the attacker might be able to take full control of all the application's data and functionality.
+
+- __How to save ourselves?__
+
+  - The most robust way to defend against CSRF attacks is to include a [CSRF token](https://portswigger.net/web-security/csrf/tokens) within relevant requests.
+  - The token should be:
+    - Unpredictable with high entropy, as for session tokens in general.
+    - Tied to the user's session.
+    - Strictly validated in __every case__ before the relevant action is executed.
+
+
+
