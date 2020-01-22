@@ -123,3 +123,43 @@
 
 
 
+# SQL injection
+
+- __How does it work?__
+
+  - SQL injection is a type of attack where a malicious user is able to execute arbitrary SQL code on a database. This can result in records being deleted or data leakage.
+
+  - Let's say we have a query like this in our code to get data:
+
+    ```sql
+    select * from sensitive_data where username = '@username' and password = '@password'
+    ```
+
+  - Here, `@username` and `@password` is provided by user.
+
+  - An attacker could pass it like this:
+
+    `@username = 1' or '1`
+
+    `@password = 1' or '1`
+
+    If this is replaced in the query we get:
+
+    ```sql
+    select * from sensitive_data where username = '1' or '1' and password = '1' or '1'
+    ```
+
+  - This query will result in exploiting data of all the users that we have.
+
+- __What can attacker do?__
+
+  - Basically anything that he wants to do with the database.
+
+- __How to save ourselves?__
+
+  - Avoid using  raw sql queries in django.
+  - Django ORM is already protected from this.
+  - Use prepared statement instead of normal queries when there is no other option.
+  - Escape sql characters like `"`,  `'`,  `or`,  etc.
+  - Read [this](https://realpython.com/prevent-python-sql-injection/).
+
