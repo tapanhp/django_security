@@ -163,3 +163,66 @@
   - Escape sql characters like `"`,  `'`,  `or`,  etc.
   - Read [this](https://realpython.com/prevent-python-sql-injection/).
 
+## Clickjacking
+
+- __How does it work?__
+
+  - Clickjacking is a type of attack where a malicious site wraps another site in a frame. This attack can result in an unsuspecting user being tricked into performing unintended actions on the target site.
+
+  - Clickjacking is an interface-based attack in which a user is tricked into clicking on actionable content on a hidden website by clicking on some other content in a decoy website.
+
+  - A web user accesses a decoy website (perhaps this is a link provided by an email) and clicks on a button to win a prize. Unknowingly, they have been deceived by an attacker into pressing an alternative hidden button and this results in the payment of an account on another site. This is an example of a clickjacking attack. The technique depends upon the incorporation of an invisible, actionable web page (or multiple pages) containing a button or hidden link, say, within an iframe.
+
+  - Let's see how can we create this kind of attack:
+
+    ```html
+    <html>
+        <head>
+              <style>
+                    #target_website {
+                          position:relative;
+                          width:128px;
+                          height:128px;
+                          opacity:0.00001;
+                          z-index:2;
+                      }
+                    #decoy_website {
+                          position:absolute;
+                          width:300px;
+                          height:400px;
+                          z-index:1;
+                      }
+              </style>
+        </head>
+        ...
+        <body>
+              <div id="decoy_website">
+                  ...decoy web content here...
+              </div>
+                  <iframe id="target_website" src="https://vulnerable-website.com">
+              </iframe>
+        </body>
+    </html>
+    ```
+
+- __What can attacker do?__
+
+  - The victim may be fooled into clicking some button that performs sensitive action which attacker wants the victim to do e.g. a bank transfer
+
+- __How to save ourselves?__
+
+  - Django contains [clickjacking protection](https://docs.djangoproject.com/en/3.0/ref/clickjacking/#clickjacking-prevention) in the form of the [`X-Frame-Options middleware`](https://docs.djangoproject.com/en/3.0/ref/middleware/#django.middleware.clickjacking.XFrameOptionsMiddleware) which in a supporting browser can prevent a site from being rendered inside a frame.
+  - The middleware is strongly recommended for any site that does not need to have its pages wrapped in a frame by third party sites, or only needs to allow that for a small section of the site.
+
+
+
+# Foot notes
+
+- There are several other things that we need to keep in mind in production.
+- You can read more about it from the official doc.
+  - [SSL/HTTPS](https://docs.djangoproject.com/en/3.0/topics/security/#ssl-https)
+  - [Host header validation](https://docs.djangoproject.com/en/3.0/topics/security/#host-header-validation)
+  - [Referrer policy](https://docs.djangoproject.com/en/3.0/topics/security/#referrer-policy)
+  - [Session security](https://docs.djangoproject.com/en/3.0/topics/security/#session-security)
+  - [And other things](https://docs.djangoproject.com/en/3.0/topics/security/#additional-security-topics)
+
